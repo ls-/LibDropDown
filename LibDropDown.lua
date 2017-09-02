@@ -1,8 +1,15 @@
+local MAJOR, MINOR = 'LibDropDown', 1
+assert(LibStub, MAJOR .. ' requires LibStub')
+
+local lib, oldMinor = LibStub:NewLibrary(MAJOR, MINOR)
+if(not lib) then
+	return
+end
+
 local styles = {}
 local dropdowns = {}
 
-LibDropDown = {}
---[[### LibDropDown:CreateMenu(_parent_, _name_)
+--[[### LDD:NewMenu(_parent_, _name_)
 
 Creates a new, empty dropdown.
 
@@ -12,7 +19,7 @@ Creates a new, empty dropdown.
 #### Returns
 - `Menu`: Menu object
 --]]
-function LibDropDown:CreateMenu(parent, name)
+function lib:NewMenu(parent, name)
 	assert(parent, 'A menu requires a given parent')
 
 	if(type(parent) == 'string') then
@@ -26,13 +33,13 @@ function LibDropDown:CreateMenu(parent, name)
 	return Menu
 end
 
---[[### LibDropDown:CloseAll(_ignore_)
+--[[### LDD:CloseAll(_ignore_)
 
 Closes all open dropdowns, even ones made with [Blizzard voodoo](https://www.townlong-yak.com/framexml/live/UIDropDownMenu.lua).
 
 - `ignore`: Menu to ignore when hiding _(frame/string)_
 --]]
-function LibDropDown:CloseAll(ignore)
+function lib:CloseAll(ignore)
 	if(type(ignore) == 'string') then
 		ignore = _G[ignore]
 	end
@@ -48,7 +55,7 @@ function LibDropDown:CloseAll(ignore)
 	end
 end
 
---[[### LibDropDown:RegisterStyle(_name, data_)
+--[[### LDD:RegisterStyle(_name, data_)
 
 Register a style for use with `Button:SetStyle(name)` and `Menu:SetStyle(name)`.
 
@@ -74,15 +81,15 @@ Register a style for use with `Button:SetStyle(name)` and `Menu:SetStyle(name)`.
   See [CreateColor](https://www.townlong-yak.com/framexml/live/go/CreateColor).
 - `radioTexture` is dependant on texture coordinates, see [Interface/Common/UI-DropDownRadioChecks](https://github.com/Gethe/wow-ui-textures/blob/live/COMMON/UI-DropDownRadioChecks.PNG).
 --]]
-function LibDropDown:RegisterStyle(name, data)
+function lib:RegisterStyle(name, data)
 	styles[name] = data
 end
 
---[[### LibDropDown:IsStyleRegistered(name)
+--[[### LDD:IsStyleRegistered(name)
 
 Returns whether a style with the given name is already registered or not _(boolean)_
 --]]
-function LibDropDown:IsStyleRegistered(name)
+function lib:IsStyleRegistered(name)
 	return not not styles[name]
 end
 
@@ -91,12 +98,12 @@ end
 LibDropDownButtonMixin = {}
 function LibDropDownButtonMixin:OnShow()
 	if(not self.Menu) then
-		self.Menu = LibDropDown:CreateMenu(self)
+		self.Menu = lib:NewMenu(self)
 	end
 end
 
 function LibDropDownButtonMixin:OnHide()
-	LibDropDown:CloseAll()
+	lib:CloseAll()
 end
 
 --[[### LibDropDownButtonTemplate:Add(...)
@@ -245,7 +252,7 @@ function LibDropDownMenuMixin:OnLoad()
 
 	self:SetStyle()
 
-	table.insert(UISpecialFrames, self:GetDebugName())
+	table.insert(UIMenus, self:GetDebugName())
 
 	self.anchor = {'TOP', self:GetParent(), 'BOTTOM', 0, -12} -- 8, 22
 	self.anchorCursor = false
@@ -256,7 +263,7 @@ function LibDropDownMenuMixin:OnLoad()
 		local animations = self:CreateAnimationGroup()
 		animations:CreateAnimation():SetDuration(self.timeout or 5)
 		animations:SetScript('OnFinished', function()
-			LibDropDown:CloseAll()
+			lib:CloseAll()
 		end)
 		self.timer = animations
 	end
@@ -331,7 +338,7 @@ Toggles the dropdown menu, closing all others.
 --]]
 function LibDropDownMenuMixin:Toggle()
 	-- hide everything first
-	LibDropDown:CloseAll(self)
+	lib:CloseAll(self)
 
 	-- toggle this
 	self:SetShown(not self:IsShown())
@@ -362,6 +369,7 @@ function LibDropDownMenuMixin:UpdateLine(index, data)
 	Line.tooltipTitle = data.tooltipTitle
 	Line.checked = nil
 	Line.isRadio = nil
+	Line.keepShown = data.keepShown
 
 	Line.Radio:Hide()
 	Line.Expand:Hide()
@@ -515,6 +523,7 @@ Everything™ is optional, some are exclusive with others.
 	- `isSpacer`: Turns the line into a spacer _(boolean)_
 	- `func`: Function to execute when clicking the line _(function)_  
 	  Arguments passed: `button`, `args` (unpacked).
+	- `keepShown`: Keeps the dropdown shown after clicking the line _(boolean)_
 	- `args`: Table of arguments to pass through to the click function _(table)_
 	- `tooltip`: Tooltip contents _(string)_
 	- `tooltipTitle`: Tooltip title _(string)_
@@ -569,7 +578,7 @@ function LibDropDownMenuMixin:AddLine(data)
 	local Line = self:UpdateLine(#self.data, data)
 
 	if(data.menu) then
-		local Menu = LibDropDown:CreateMenu(Line)
+		local Menu = lib:NewMenu(Line)
 		Menu:AddLines(unpack(data.menu))
 
 		if(#data.menu == 0) then
@@ -622,7 +631,7 @@ end
 
 Sets the active style for all menus related to this one.
 
-- `name`: Name of registered style (see [LibDropDown:RegisterStyle]())
+- `name`: Name of registered style (see [LDD:RegisterStyle]())
 --]]
 function LibDropDownMenuMixin:SetStyle(name)
 	if(not name) then
@@ -655,7 +664,7 @@ end
 Gets the active style for this menu, and all menus related to this one.
 
 #### Returns
-- `name`: Name of registered style (see [LibDropDown:RegisterStyle]())
+- `name`: Name of registered style (see [LDD:RegisterStyle]())
 --]]
 function LibDropDownMenuMixin:GetStyle()
 	return self.parent.style
@@ -823,7 +832,7 @@ function LibDropDownLineMixin:OnClick(button)
 	end
 
 	if(not self.keepShown) then
-		LibDropDown:CloseAll()
+		lib:CloseAll()
 	end
 end
 
