@@ -4,13 +4,20 @@ local function OnShow(self)
 	-- gather some size data
 	local padding = self.parent.padding
 	local spacing = self.parent.spacing
+	local minWidth = self.parent.minWidth
+	local maxWidth = self.parent.maxWidth
 	local width = 0
 	local height = -spacing
 
 	for _, Line in next, self.lines do
 		if(Line:IsShown()) then
 			local lineWidth = Line.Text:GetWidth() + 50
-			lineWidth = math.max(lineWidth, 100)
+			lineWidth = math.max(lineWidth, minWidth)
+
+			if(maxWidth) then
+				lineWidth = math.min(lineWidth, maxWidth)
+			end
+
 			if(lineWidth > width) then
 				width = lineWidth
 			end
@@ -76,7 +83,10 @@ function menuMixin:Toggle()
 end
 
 --[[ Menu:UpdateLine(_index, data_)
-TBD
+Update a line with the given index with the supplied data.
+
+* `index`: menu line index _(integer)_
+* `data`: line data _(table)_ (see [Menu:AddLine(_data_)](Menu#menuaddlinedata))
 --]]
 function menuMixin:UpdateLine(index, data)
 	local Line = self.lines[index]
@@ -364,6 +374,8 @@ function menuMixin:SetStyle(name)
 	local data = lib.styles[name]
 	self.parent.spacing = data.spacing or 0
 	self.parent.padding = data.padding or 10
+	self.parent.minWidth = data.minWidth or 100
+	self.parent.maxWidth = data.maxWidth
 	self.parent.gap = data.gap or 10
 	self.parent.normalFont = data.normalFont or 'GameFontHighlightSmallLeft'
 	self.parent.highlightFont = data.highlightFont or self.parent.normalFont
