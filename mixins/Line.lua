@@ -1,3 +1,7 @@
+--[[ Line:header
+Documentation for the [Line](Line) object.
+Created with [LibDropDown:CreateLine()](LibDropDown#libdropdowncreatelinemenu).
+--]]
 local lib = LibStub('LibDropDown')
 
 local function OnShow(self)
@@ -129,7 +133,7 @@ See [FrameXML/Util.lua's CreateTextureMarkup](https://www.townlong-yak.com/frame
 --]]
 function lineMixin:SetIcon(...)
 	local markup = CreateTextureMarkup(...)
-	self.__icon = markup
+	self.__icon = markup .. ' '
 	self:UpdateText()
 end
 
@@ -145,7 +149,7 @@ See [FrameXML/Util.lua's CreateAtlasMarkup](https://www.townlong-yak.com/framexm
 --]]
 function lineMixin:SetAtlas(...)
 	local markup = CreateAtlasMarkup(...)
-	self.__atlas = markup
+	self.__atlas = markup .. ' '
 	self:UpdateText()
 end
 
@@ -169,7 +173,7 @@ end
 Updates the Line text.
 --]]
 function lineMixin:UpdateText()
-	local text = self:GetText():gsub('|T.*|t'):gsub('|A.*|a')
+	local text = self:GetText():gsub('|T.*|t', ''):gsub('|A.*|a', '')
 	self:SetText(text)
 end
 
@@ -188,6 +192,27 @@ function lineMixin:SetTexture(texture, color)
 	end
 
 	self.Texture:Show()
+end
+
+--[[ Line:Reset()
+Resets the state of the Line back to default.  
+Is called at the start of [Menu:UpdateLine()](Menu#menuupdatelineindexdata).
+--]]
+function lineMixin:Reset()
+	self.checked = nil
+	self.isRadio = nil
+	self.__icon = nil
+	self.__atlas = nil
+
+	self.Texture:Hide()
+	self.Highlight:Hide()
+	self.Radio:Hide()
+	self.Expand:Hide()
+	self.Spacer:Hide()
+	self.Text:Hide()
+	self.ColorSwatch:Hide()
+
+	self:SetText('')
 end
 
 --[[ LibDropDown:CreateLine(_Menu_)
@@ -211,14 +236,12 @@ function lib:CreateLine(Menu)
 
 	local Texture = Line:CreateTexture('$parentTexture', 'BACKGROUND')
 	Texture:SetAllPoints()
-	Texture:Hide()
 	Line.Texture = Texture
 
 	local Highlight = Line:CreateTexture('$parentHighlight', 'BACKGROUND')
 	Highlight:SetAllPoints()
 	Highlight:SetBlendMode('ADD')
 	Highlight:SetTexture(Menu.parent.highlightTexture or 'Interface\\QuestFrame\\UI-QuestTitleHighlight')
-	Highlight:Hide()
 	Line.Highlight = Highlight
 
 	local Radio = Line:CreateTexture('$parentRadio', 'ARTWORK')
@@ -239,7 +262,6 @@ function lib:CreateLine(Menu)
 	Spacer:SetSize(1, 1)
 	Spacer:SetAlpha(0.5)
 	Spacer:SetTexture('Interface\\ChatFrame\\ChatFrameBackground')
-	Spacer:Hide()
 	Line.Spacer = Spacer
 
 	local Text = Line:CreateFontString('$parentText', 'ARTWORK', 'GameFontHighlightSmallLeft')

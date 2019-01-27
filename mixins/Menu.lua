@@ -1,3 +1,7 @@
+--[[ Menu:header
+Documentation for the [Menu](Menu) object.
+Created with [LibDropDown:NewMenu()](LibDropDown#libdropdownnewmenuparent-name).
+--]]
 local lib = LibStub('LibDropDown')
 
 local function OnShow(self)
@@ -11,7 +15,12 @@ local function OnShow(self)
 
 	for _, Line in next, self.lines do
 		if(Line:IsShown()) then
-			local lineWidth = Line.Text:GetWidth() + 50
+			local lineWidth
+			if(Line.Text:IsShown()) then
+				lineWidth = Line.Text:GetWidth()
+			else
+				lineWidth = Line:GetTextWidth()
+			end
 			lineWidth = math.max(lineWidth, minWidth)
 
 			if(maxWidth) then
@@ -96,23 +105,17 @@ function menuMixin:UpdateLine(index, data)
 		table.insert(self.lines, Line)
 	end
 
+	Line:Reset()
+
 	Line.func = data.func
 	Line.args = data.args
 	Line.tooltip = data.tooltip
 	Line.tooltipTitle = data.tooltipTitle
-	Line.checked = nil
-	Line.isRadio = nil
 	Line.keepShown = data.keepShown
-
-	Line.Radio:Hide()
-	Line.Expand:Hide()
-	Line.ColorSwatch:Hide()
-	Line.Texture:Hide()
 
 	if(data.isSpacer) then
 		Line.Spacer:Show()
 		Line:EnableMouse(false)
-		return Line
 	elseif(data.isTitle) then
 		local text = data.text
 		assert(text and type(text) == 'string', 'Missing required data "text"')
@@ -121,24 +124,28 @@ function menuMixin:UpdateLine(index, data)
 		Line:SetNormalFontObject(self.parent.titleFont)
 	else
 		Line:EnableMouse(true)
-		Line.Spacer:Hide()
-
-		if(data.font) then
-			Line.Text:SetFont(data.font, data.fontSize or 12, data.fontFlags)
-		elseif(data.fontObject) then
-			Line:SetNormalFontObject(data.fontObject)
-			Line:SetHighlightFontObject(data.fontObject)
-			Line:SetDisabledFontObject(data.fontObject)
-		else
-			Line:SetNormalFontObject(self.parent.normalFont)
-			Line:SetHighlightFontObject(self.parent.highlightFont)
-			Line:SetDisabledFontObject(self.parent.disabledFont)
-		end
 
 		local text = data.text
 		assert(text and type(text) == 'string', 'Missing required data "text"')
 
-		Line:SetText(text)
+		if(data.font) then
+			Line.Text:SetFont(data.font, data.fontSize or 12, data.fontFlags)
+			Line.Text:SetText(text)
+			Line.Text:Show()
+		else
+			if(data.fontObject) then
+				Line:SetNormalFontObject(data.fontObject)
+				Line:SetHighlightFontObject(data.fontObject)
+				Line:SetDisabledFontObject(data.fontObject)
+			else
+				Line:SetNormalFontObject(self.parent.normalFont)
+				Line:SetHighlightFontObject(self.parent.highlightFont)
+				Line:SetDisabledFontObject(self.parent.disabledFont)
+			end
+
+			Line:SetText(text)
+		end
+
 		Line:SetTexture(data.texture, data.textureColor)
 
 		if(data.icon) then
@@ -457,7 +464,7 @@ function menuMixin:GetTimeout()
 	return self.parent.timeout
 end
 
---[[ lib:NewMenu(_parent_, _name_)
+--[[ LibDropDown:NewMenu(_parent_, _name_)
 Creates and returns a new, empty dropdown [Menu](Menu).
 
 * `parent`: Frame for parenting. _(frame/string)_

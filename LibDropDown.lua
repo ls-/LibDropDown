@@ -9,7 +9,7 @@ end
 lib.dropdowns = {}
 lib.styles = {}
 
---[[ lib:CloseAll(_ignore_)
+--[[ LibDropDown:CloseAll(_ignore_)
 Closes all open dropdowns, even ones made with [Blizzard voodoo](https://www.townlong-yak.com/framexml/live/UIDropDownMenu.lua).
 
 * `ignore`: Menu to ignore when hiding _(frame/string)_
@@ -30,7 +30,7 @@ function lib:CloseAll(ignore)
 	end
 end
 
---[[ lib:RegisterStyle(_name, data_)
+--[[ LibDropDown:RegisterStyle(_name, data_)
 Register a style for use with [Button:SetStyle(name)](Button#buttonsetstylename) and [Menu:SetStyle(name)](Menu#menusetstylename).
 
 * `name`: Any name _(string)_
@@ -63,7 +63,7 @@ function lib:RegisterStyle(name, data)
 	self.styles[name] = data
 end
 
---[[ lib:IsStyleRegistered(_name_)
+--[[ LibDropDown:IsStyleRegistered(_name_)
 Returns `true`/`false` whether a style with the given name is already registered or not.
 --]]
 function lib:IsStyleRegistered(name)
