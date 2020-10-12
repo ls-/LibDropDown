@@ -163,8 +163,8 @@ function menuMixin:UpdateLine(index, data)
 		end
 
 		if(data.atlas) then
-			local exists, atlasWidth, atlasHeight = GetAtlasInfo(data.atlas)
-			assert(exists, 'No atlas \'' .. exists .. '\' exists')
+			local atlas = C_Texture.GetAtlasInfo(data.atlas)
+			assert(atlas and (atlas.filename or atlas.file), 'No atlas \'' .. data.atlas .. '\' exists')
 
 			local width = data.atlasWidth
 			local height = data.atlasHeight
@@ -176,7 +176,7 @@ function menuMixin:UpdateLine(index, data)
 
 			if(not width) then
 				-- keeping aspect ratio of the atlas
-				width = (atlasWidth / atlasHeight) * height
+				width = (atlas.width / atlas.height) * height
 			end
 
 			local x = data.atlasOffsetX or data.atlasOffset or 0
@@ -477,7 +477,7 @@ function lib:NewMenu(parent, name)
 		parent = _G[parent]
 	end
 
-	local Menu = Mixin(CreateFrame('Button', (name or parent:GetDebugName() .. 'Menu'), parent), menuMixin, CallbackRegistryBaseMixin)
+	local Menu = Mixin(CreateFrame('Button', (name or parent:GetDebugName() .. 'Menu'), parent), menuMixin, CallbackRegistryBaseMixin or CallbackRegistryMixin)
 	Menu:Hide()
 	Menu:EnableMouse(true)
 	Menu:SetClampedToScreen(true)
@@ -486,7 +486,7 @@ function lib:NewMenu(parent, name)
 	Menu:SetScript('OnEnter', OnEnter)
 	Menu:SetScript('OnLeave', OnLeave)
 
-	local Backdrop = CreateFrame('Frame', '$parentBackdrop', Menu)
+	local Backdrop = CreateFrame('Frame', '$parentBackdrop', Menu, BackdropTemplateMixin and 'BackdropTemplate')
 	Backdrop:SetPoint('CENTER')
 	Menu.Backdrop = Backdrop
 
